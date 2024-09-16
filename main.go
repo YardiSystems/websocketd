@@ -83,7 +83,58 @@ func main() {
 
 		go func(addr string) {
 			if config.Ssl {
-				rejects <- http.ListenAndServeTLS(addr, config.CertFile, config.KeyFile, nil)
+				//rejects <- http.ListenAndServeTLS(addr, config.CertFile, config.KeyFile, nil)
+				
+				mux := http.NewServeMux()
+				mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+					//w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
+					//w.Write([]byte("This is an example server.\n"))
+					//handler := libwebsocketd.NewWebsocketdServer(config.Config, log, config.MaxForks)
+					//http.Handle("/", handler)
+				
+					//cfg := &tls.Config{
+					//	MinVersion:               tls.VersionTLS12,
+					//	CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+					//	PreferServerCipherSuites: true,
+					//	CipherSuites: []uint16{
+					//		tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+					//		tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+					//		tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+					//		tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+					//	},
+					//}
+		
+					//http := http.Server{
+					//	Addr:         addr,
+					//	Handler:      mux,
+					//	TLSConfig:    cfg,
+					//	TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
+					//}
+
+					//rejects <- http.ListenAndServeTLS(config.CertFile, config.KeyFile)
+				})
+
+				cfg := &tls.Config{
+					MinVersion:               tls.VersionTLS12,
+					CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+					PreferServerCipherSuites: true,
+					CipherSuites: []uint16{
+						tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+						tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+						tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+						tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+						tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+						tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+					},
+				}
+	
+				//Why TLSNextProto is not required - TLSNextProto optionally specifies a function to take over ownership of the provided TLS connection when an ALPN protocol upgrade has occurred
+				http := http.Server{
+					Addr:         addr,
+					TLSConfig:    cfg,
+				}
+
+				rejects <- http.ListenAndServeTLS(config.CertFile, config.KeyFile)
 			} else {
 				rejects <- http.ListenAndServe(addr, nil)
 			}
